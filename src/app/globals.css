@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 5%;
+    --foreground: 43 100% 85%;
+    --card: 0 0% 8%;
+    --card-foreground: 43 100% 85%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 43 100% 85%;
+    --primary: 43 74% 49%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 60% 35%;
+    --secondary-foreground: 43 100% 85%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 43 30% 60%;
+    --accent: 43 74% 49%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 0 84% 45%;
+    --destructive-foreground: 43 100% 85%;
+    --border: 43 74% 49%;
+    --input: 0 0% 12%;
+    --ring: 43 74% 49%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 5%;
+    --foreground: 43 100% 85%;
+    --card: 0 0% 8%;
+    --card-foreground: 43 100% 85%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 43 100% 85%;
+    --primary: 43 74% 49%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 60% 35%;
+    --secondary-foreground: 43 100% 85%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 43 30% 60%;
+    --accent: 43 74% 49%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 0 84% 45%;
+    --destructive-foreground: 43 100% 85%;
+    --border: 43 74% 49%;
+    --input: 0 0% 12%;
+    --ring: 43 74% 49%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background: radial-gradient(ellipse at top, rgba(139, 0, 0, 0.15) 0%, rgba(0, 0, 0, 1) 50%),
+                radial-gradient(ellipse at bottom, rgba(43, 15, 0, 0.1) 0%, rgba(0, 0, 0, 1) 50%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .text-gold {
+    color: #D4AF37;
+  }
+
+  .border-gold {
+    border-color: #D4AF37;
+  }
+
+  .bg-gold {
+    background-color: #D4AF37;
+  }
+
+  .text-crimson {
+    color: #8B0000;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .oriental-border {
+    border-image: linear-gradient(135deg, #D4AF37 0%, #8B0000 50%, #D4AF37 100%) 1;
+  }
+
+  .mystic-glow {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3),
+                0 0 40px rgba(212, 175, 55, 0.1);
+  }
+
+  .mystic-text-shadow {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5),
+                 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+}
