@@ -85,9 +85,9 @@ export async function POST(request: NextRequest) {
           }
           controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
           controller.close();
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error("Stream error:", error);
-          const errorMsg = error?.message || String(error);
+          const errorMsg = error instanceof Error ? error.message : String(error);
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: errorMsg })}\n\n`));
           controller.close();
         }
@@ -101,9 +101,9 @@ export async function POST(request: NextRequest) {
         Connection: "keep-alive",
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API error:", error);
-    const errorMessage = error?.message || error?.toString() || "未知错误";
+    const errorMessage = error instanceof Error ? error.message : (typeof error === "string" ? error : "未知错误");
     console.error("详细错误信息:", errorMessage);
     return new Response(
       JSON.stringify({ 
