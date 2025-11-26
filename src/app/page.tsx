@@ -156,8 +156,22 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "请求失败" }));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.details || errorMessage;
+        } catch (e) {
+          // 如果响应不是 JSON，尝试读取文本
+          try {
+            const text = await response.text();
+            if (text) {
+              errorMessage = text.substring(0, 200); // 限制长度
+            }
+          } catch (textError) {
+            // 忽略文本读取错误
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const reader = response.body?.getReader();

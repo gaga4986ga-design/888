@@ -1,16 +1,11 @@
-import { OpenRouter } from "@openrouter/sdk";
 import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const openrouter = new OpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY || "",
-});
-
 // 检查 API Key 是否配置
-if (!process.env.OPENROUTER_API_KEY) {
-  console.error("OPENROUTER_API_KEY 环境变量未设置");
+if (!process.env.SILICONFLOW_API_KEY) {
+  console.error("SILICONFLOW_API_KEY 环境变量未设置");
 }
 
 export async function POST(request: NextRequest) {
@@ -58,26 +53,24 @@ export async function POST(request: NextRequest) {
 
 请用专业但易懂的语言，以温暖、积极的态度呈现报告。格式要清晰，使用适当的emoji装饰（🌟、☯️、🔮、✨等）。`;
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      throw new Error("OPENROUTER_API_KEY 环境变量未设置，请在 Vercel 项目设置中添加环境变量");
+    if (!process.env.SILICONFLOW_API_KEY) {
+      throw new Error("SILICONFLOW_API_KEY 环境变量未设置，请在 Vercel 项目设置中添加环境变量");
     }
 
-    // 验证 API Key 格式
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.SILICONFLOW_API_KEY;
     console.log("API Key 前10个字符:", apiKey.substring(0, 10));
-    console.log("API Key 长度:", apiKey.length);
-    console.log("开始调用 OpenRouter API...");
-    console.log("模型: tngtech/deepseek-r1t-chimera:free");
+    console.log("开始调用 SiliconFlow API...");
+    console.log("模型: Qwen/QwQ-32B");
     
-    // 重新初始化 OpenRouter 确保使用最新的 API Key
-    const openrouterClient = new OpenRouter({
-      apiKey: apiKey,
-    });
-    
-    let stream;
-    try {
-      stream = await openrouterClient.chat.send({
-        model: "tngtech/deepseek-r1t-chimera:free",
+    // 调用 SiliconFlow API
+    const apiResponse = await fetch("https://api.siliconflow.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "Qwen/QwQ-32B",
         messages: [
           {
             role: "user",
@@ -85,50 +78,76 @@ export async function POST(request: NextRequest) {
           },
         ],
         stream: true,
-      });
-      console.log("OpenRouter API 调用成功，获得流对象");
-    } catch (apiError: unknown) {
-      const apiErrorMessage = apiError instanceof Error ? apiError.message : String(apiError);
-      console.error("OpenRouter API 调用失败:", apiErrorMessage);
-      console.error("完整错误:", apiError);
-      
-      // 如果是认证错误，提供更详细的提示
-      if (apiErrorMessage.includes("User not found") || apiErrorMessage.includes("401")) {
-        throw new Error(`API Key 认证失败。请检查：\n1. API Key 是否正确（当前: ${apiKey.substring(0, 15)}...）\n2. 是否在 OpenRouter 网站激活\n3. 账户是否有余额\n4. 模型名称是否正确`);
-      }
-      
-      throw new Error(`OpenRouter API 调用失败: ${apiErrorMessage}`);
+      }),
+    });
+
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      console.error("SiliconFlow API 调用失败:", apiResponse.status, errorText);
+      throw new Error(`SiliconFlow API 调用失败: ${apiResponse.status} ${apiResponse.statusText}`);
     }
 
-    // 创建可读流
+    if (!apiResponse.body) {
+      throw new Error("API 响应没有 body");
+    }
+
+    const stream = apiResponse.body;
+    console.log("SiliconFlow API 调用成功，获得流对象");
+
+    // 创建可读流，将 SiliconFlow 的流式响应转换为 SSE 格式
     const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
     const readable = new ReadableStream({
       async start(controller) {
         try {
           console.log("开始读取流数据...");
+          const reader = stream.getReader();
           let chunkCount = 0;
-          for await (const chunk of stream) {
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
             chunkCount++;
-            if (chunkCount === 1) {
-              console.log("收到第一个 chunk:", JSON.stringify(chunk).substring(0, 200));
-            }
+            const chunkText = decoder.decode(value, { stream: true });
+            const lines = chunkText.split("\n");
             
-            // chunk 是 ChatStreamingResponseChunkData 类型
-            const content = chunk?.choices?.[0]?.delta?.content;
-            
-            if (content) {
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
-            }
-            
-            // 检查是否有错误
-            if (chunk?.error) {
-              console.error("Stream chunk error:", chunk.error);
-              throw new Error(chunk.error.message || "流式响应中出现错误");
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6).trim();
+                if (data === "[DONE]") {
+                  controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+                  controller.close();
+                  console.log(`流读取完成，共处理 ${chunkCount} 个 chunks`);
+                  return;
+                }
+                
+                try {
+                  const parsed = JSON.parse(data);
+                  const content = parsed?.choices?.[0]?.delta?.content;
+                  
+                  if (content) {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
+                  }
+                  
+                  // 检查是否有错误
+                  if (parsed?.error) {
+                    console.error("Stream chunk error:", parsed.error);
+                    throw new Error(parsed.error.message || "流式响应中出现错误");
+                  }
+                } catch (parseError) {
+                  // 忽略解析错误，继续处理下一行
+                  if (chunkCount === 1) {
+                    console.log("第一个 chunk 内容:", data.substring(0, 200));
+                  }
+                }
+              }
             }
           }
-          console.log(`流读取完成，共处理 ${chunkCount} 个 chunks`);
+          
           controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
           controller.close();
+          console.log(`流读取完成，共处理 ${chunkCount} 个 chunks`);
         } catch (error: unknown) {
           console.error("Stream error:", error);
           const errorMsg = error instanceof Error ? error.message : String(error);
