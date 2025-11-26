@@ -62,23 +62,42 @@ export async function POST(request: NextRequest) {
       throw new Error("OPENROUTER_API_KEY 环境变量未设置，请在 Vercel 项目设置中添加环境变量");
     }
 
-    const stream = await openrouter.chat.send({
-      model: "tngtech/deepseek-r1t2-chimera:free",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      stream: true,
-    });
+    console.log("开始调用 OpenRouter API...");
+    console.log("模型: tngtech/deepseek-r1t2-chimera:free");
+    
+    let stream;
+    try {
+      stream = await openrouter.chat.send({
+        model: "tngtech/deepseek-r1t2-chimera:free",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        stream: true,
+      });
+      console.log("OpenRouter API 调用成功，获得流对象");
+    } catch (apiError: unknown) {
+      const apiErrorMessage = apiError instanceof Error ? apiError.message : String(apiError);
+      console.error("OpenRouter API 调用失败:", apiErrorMessage);
+      console.error("完整错误:", apiError);
+      throw new Error(`OpenRouter API 调用失败: ${apiErrorMessage}`);
+    }
 
     // 创建可读流
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
         try {
+          console.log("开始读取流数据...");
+          let chunkCount = 0;
           for await (const chunk of stream) {
+            chunkCount++;
+            if (chunkCount === 1) {
+              console.log("收到第一个 chunk:", JSON.stringify(chunk).substring(0, 200));
+            }
+            
             // chunk 是 ChatStreamingResponseChunkData 类型
             const content = chunk?.choices?.[0]?.delta?.content;
             
@@ -92,6 +111,7 @@ export async function POST(request: NextRequest) {
               throw new Error(chunk.error.message || "流式响应中出现错误");
             }
           }
+          console.log(`流读取完成，共处理 ${chunkCount} 个 chunks`);
           controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
           controller.close();
         } catch (error: unknown) {
