@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.OPENROUTER_API_KEY;
     console.log("API Key 前10个字符:", apiKey.substring(0, 10));
     console.log("开始调用 OpenRouter API...");
-    console.log("模型: deepseek/deepseek-chat-v3-0324:free");
+    console.log("模型: tngtech/deepseek-r1t2-chimera:free");
     
     // 重新初始化 OpenRouter 确保使用最新的 API Key
     const openrouterClient = new OpenRouter({
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     let stream;
     try {
       stream = await openrouterClient.chat.send({
-        model: "deepseek/deepseek-chat-v3-0324:free",
+        model: "tngtech/deepseek-r1t2-chimera:free",
         messages: [
           {
             role: "user",
