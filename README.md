@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 天机阁 - 命理算命应用
 
-## Getting Started
+这是一个基于 Next.js 和 AI 的命理算命 Web 应用，使用 OpenRouter API 提供真实的命理分析服务。
 
-First, run the development server:
+## 功能特点
+
+- 🎯 基于生辰八字的命理分析
+- 🤖 使用 AI 模型生成专业的命理报告
+- ✨ 流式响应，实时显示生成内容
+- 🎨 精美的神秘风格 UI 设计
+- 📱 响应式设计，支持移动端
+
+## 技术栈
+
+- **框架**: Next.js 15 (App Router)
+- **UI 组件**: shadcn/ui
+- **样式**: Tailwind CSS
+- **AI 服务**: OpenRouter API
+- **语言**: TypeScript
+
+## 开始使用
+
+### 1. 安装依赖
+
+```bash
+npm install
+# 或
+yarn install
+# 或
+pnpm install
+# 或
+bun install
+```
+
+### 2. 配置环境变量
+
+在项目根目录创建 `.env.local` 文件，并添加你的 OpenRouter API Key：
+
+```bash
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+```
+
+**重要**: 请将 `your_openrouter_api_key_here` 替换为你的实际 API Key。
+
+### 3. 运行开发服务器
 
 ```bash
 npm run dev
-# or
+# 或
 yarn dev
-# or
+# 或
 pnpm dev
-# or
+# 或
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开 [http://localhost:3000](http://localhost:3000) 查看应用。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. 构建生产版本
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 项目结构
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── fortune/
+│   │       └── route.ts      # API 路由，处理命理计算请求
+│   ├── page.tsx              # 主页面组件
+│   ├── layout.tsx            # 布局组件
+│   └── ClientBody.tsx        # 客户端包装组件
+└── components/
+    └── ui/                   # shadcn/ui 组件
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API 说明
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+应用使用 `/api/fortune` 端点来处理命理计算请求。该端点：
 
-## Deploy on Vercel
+- 接收用户的生辰信息（性别、出生日期、出生时间、出生地点）
+- 调用 OpenRouter API 生成命理报告
+- 以流式方式返回结果，提供实时反馈
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 注意事项
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 请妥善保管你的 API Key，不要将其提交到版本控制系统
+- `.env.local` 文件已在 `.gitignore` 中，不会被提交
+- 命理分析结果仅供参考，请理性对待
+
+## 部署
+
+### Vercel 部署
+
+1. 将项目推送到 GitHub
+2. 在 Vercel 中导入项目
+3. 在 Vercel 的环境变量设置中添加 `OPENROUTER_API_KEY`
+4. 部署完成
+
+### 其他平台
+
+确保在部署平台的环境变量中设置 `OPENROUTER_API_KEY`。
+
+## License
+
+MIT

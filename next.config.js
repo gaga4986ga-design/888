@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  distDir: 'out',
+  // output: 'export', // 注释掉以支持 API 路由
+  // distDir: 'out',
   allowedDevOrigins: ["*.preview.same-app.com"],
   images: {
     unoptimized: true,
