@@ -62,12 +62,21 @@ export async function POST(request: NextRequest) {
       throw new Error("OPENROUTER_API_KEY 环境变量未设置，请在 Vercel 项目设置中添加环境变量");
     }
 
+    // 验证 API Key 格式
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    console.log("API Key 前10个字符:", apiKey.substring(0, 10));
+    console.log("API Key 长度:", apiKey.length);
     console.log("开始调用 OpenRouter API...");
     console.log("模型: tngtech/deepseek-r1t2-chimera:free");
     
+    // 重新初始化 OpenRouter 确保使用最新的 API Key
+    const openrouterClient = new OpenRouter({
+      apiKey: apiKey,
+    });
+    
     let stream;
     try {
-      stream = await openrouter.chat.send({
+      stream = await openrouterClient.chat.send({
         model: "tngtech/deepseek-r1t2-chimera:free",
         messages: [
           {
@@ -82,6 +91,12 @@ export async function POST(request: NextRequest) {
       const apiErrorMessage = apiError instanceof Error ? apiError.message : String(apiError);
       console.error("OpenRouter API 调用失败:", apiErrorMessage);
       console.error("完整错误:", apiError);
+      
+      // 如果是认证错误，提供更详细的提示
+      if (apiErrorMessage.includes("User not found") || apiErrorMessage.includes("401")) {
+        throw new Error(`API Key 认证失败。请检查：\n1. API Key 是否正确（当前: ${apiKey.substring(0, 15)}...）\n2. 是否在 OpenRouter 网站激活\n3. 账户是否有余额\n4. 模型名称是否正确`);
+      }
+      
       throw new Error(`OpenRouter API 调用失败: ${apiErrorMessage}`);
     }
 
