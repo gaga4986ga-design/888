@@ -156,7 +156,8 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("请求失败");
+        const errorData = await response.json().catch(() => ({ error: "请求失败" }));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const reader = response.body?.getReader();
@@ -189,9 +190,15 @@ export default function Home() {
               if (parsed.content) {
                 fullContent += parsed.content;
                 setReportContent(fullContent);
+              } else if (parsed.error) {
+                // 处理流式响应中的错误
+                throw new Error(parsed.error);
               }
             } catch (e) {
-              // 忽略解析错误
+              // 如果是错误消息则抛出，否则忽略解析错误
+              if (e instanceof Error && e.message && e.message !== "Unexpected token") {
+                throw e;
+              }
             }
           }
         }
@@ -201,7 +208,8 @@ export default function Home() {
       setShowReport(true);
     } catch (error) {
       console.error("Error:", error);
-      alert("生成命理报告时出错，请稍后重试");
+      const errorMessage = error instanceof Error ? error.message : "未知错误";
+      alert(`生成命理报告时出错：${errorMessage}\n\n请检查：\n1. 网络连接是否正常\n2. API 配置是否正确\n3. 稍后重试`);
       setIsCalculating(false);
     }
   };

@@ -8,6 +8,11 @@ const openrouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY || "",
 });
 
+// 检查 API Key 是否配置
+if (!process.env.OPENROUTER_API_KEY) {
+  console.error("OPENROUTER_API_KEY 环境变量未设置");
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -52,6 +57,10 @@ export async function POST(request: NextRequest) {
    - 建议佩戴的饰品
 
 请用专业但易懂的语言，以温暖、积极的态度呈现报告。格式要清晰，使用适当的emoji装饰（🌟、☯️、🔮、✨等）。`;
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      throw new Error("OPENROUTER_API_KEY 环境变量未设置，请在 Vercel 项目设置中添加环境变量");
+    }
 
     const stream = await openrouter.chat.send({
       model: "tngtech/deepseek-r1t2-chimera:free",
