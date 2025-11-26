@@ -94,12 +94,59 @@ src/
 
 ## 部署
 
-### Vercel 部署
+### Vercel 自动部署（推荐）
 
-1. 将项目推送到 GitHub
-2. 在 Vercel 中导入项目
-3. 在 Vercel 的环境变量设置中添加 `OPENROUTER_API_KEY`
-4. 部署完成
+项目已配置好自动部署，只需完成以下步骤：
+
+#### 第一次设置（只需做一次）：
+
+1. **访问 Vercel**
+   - 打开 https://vercel.com
+   - 使用 GitHub 账号登录
+
+2. **导入项目**
+   - 点击 "Add New..." → "Project"
+   - 选择你的 GitHub 仓库：`gaga4986ga-design/888`
+   - 点击 "Import"
+
+3. **配置项目**
+   - **Framework Preset**: Next.js（会自动检测）
+   - **Root Directory**: `./`（默认）
+   - **Build Command**: `npm run build`（默认）
+   - **Output Directory**: `.next`（默认）
+   - **Install Command**: `npm install`（默认）
+
+4. **添加环境变量**（重要！）
+   - 在 "Environment Variables" 部分
+   - 点击 "Add" 添加新变量：
+     - **Name**: `OPENROUTER_API_KEY`
+     - **Value**: 你的 API Key（`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`）
+     - **Environment**: 选择 `Production`, `Preview`, `Development`（全选）
+
+5. **部署**
+   - 点击 "Deploy"
+   - 等待部署完成（通常 2-3 分钟）
+
+#### 自动部署（设置完成后）：
+
+✅ **完成第一次设置后，以后每次你推送代码到 GitHub，Vercel 会自动：**
+- 检测到代码变更
+- 自动触发新的部署
+- 构建并部署最新版本
+- 你可以在 Vercel 仪表板查看部署状态
+
+#### 查看部署状态：
+
+- 访问 Vercel 仪表板：https://vercel.com/dashboard
+- 每次部署都会显示：
+  - ✅ 成功（绿色）
+  - ⏳ 进行中（黄色）
+  - ❌ 失败（红色，可查看错误日志）
+
+#### 部署后的访问：
+
+- Vercel 会自动分配一个域名，格式：`https://888-xxx.vercel.app`
+- 你也可以在项目设置中添加自定义域名
 
 ### 其他平台
 
